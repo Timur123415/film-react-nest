@@ -1,47 +1,43 @@
-import { Module, ValidationPipe } from '@nestjs/common';
-import { APP_PIPE } from '@nestjs/core';
+import { DynamicModule, Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { ConfigModule } from '@nestjs/config';
 import * as path from 'node:path';
+import { FilmsModule } from './films/films.module';
+import { OrderModule } from './orders/orders.module';
+import { AppConfig, AppConfigModule } from './app.config.provider';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { FilmEntity } from './films/entities/film.entity';
+import { ScheduleEntity } from './films/entities/schedule.entity';
 import { MongooseModule } from '@nestjs/mongoose';
+import 'dotenv/config';
 
-import { configProvider } from './app.config.provider';
-import { FilmsController } from './films/films.controller';
-import { FilmsService } from './films/films.service';
-import { OrderController } from './order/order.controller';
-import { OrderService } from './order/order.service';
-import { FilmsDataProvider } from './repository/films.repository';
-import { Movie, MovieSchema } from './films/schema/films.schema';
-
-@Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      cache: true,
-    }),
-    MongooseModule.forRoot(
-      process.env.DATABASE_URL || 'mongodb://localhost:27017/afisha',
-    ),
-    MongooseModule.forFeature([{ name: Movie.name, schema: MovieSchema }]),
-    ServeStaticModule.forRoot({
-      rootPath: path.join(__dirname, '..', 'public', 'content', 'afisha'),
-      serveRoot: '/content/afisha',
-    }),
-  ],
-  controllers: [FilmsController, OrderController],
-  providers: [
-    configProvider,
-    FilmsService,
-    OrderService,
-    FilmsDataProvider,
-    {
-      provide: APP_PIPE,
-      useValue: new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: false,
-        transform: true,
-      }),
-    },
-  ],
-})
-export class AppModule {}
+@Module({})
+export class AppModule {
+  static register(config: AppConfig): DynamicModule {
+    const ormModule =
+      config.database.driver === 'postgres'
+        ? TypeOrmModule.forRoot({
+            type: 'postgres',
+            host: config.database.postgres.host,
+            port: config.database.postgres.port,
+            username: config.database.postgres.user,
+            password: config.database.postgres.password,
+            database: config.database.postgres.db,
+            synchronize: false,
+            entities: [FilmEntity, ScheduleEntity],
+          })
+        : MongooseModule.forRoot(config.database.mongoUrl);
+    return {
+      module: AppModule,
+      imports: [
+        AppConfigModule,
+        ServeStaticModule.forRoot({
+          rootPath: path.resolve(__dirname, '../public/content/afisha'),
+          serveRoot: '/content/afisha',
+        }),
+        ormModule,
+        FilmsModule.registerAsync(config.database.driver),
+        OrderModule.registerAsync(config.database.driver),
+      ],
+    };
+  }
+}
