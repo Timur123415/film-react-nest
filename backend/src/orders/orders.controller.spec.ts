@@ -54,7 +54,7 @@ describe('OrderController', () => {
     const result = await controller.orderTickets(orderDto);
 
     expect(service.orderTickets).toHaveBeenCalledWith(orderDto);
-    
+
     expect(result).toEqual({
       items: orderDto.tickets,
       total: 1,

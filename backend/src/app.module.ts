@@ -32,7 +32,7 @@ export class AppModule {
         AppConfigModule,
         ServeStaticModule.forRoot({
           rootPath: path.join(process.cwd(), 'public'),
-          serveRoot: '/', 
+          serveRoot: '/',
         }),
         ormModule,
         FilmsModule.registerAsync(config.database.driver),

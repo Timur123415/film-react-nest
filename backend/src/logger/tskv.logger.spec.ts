@@ -24,7 +24,7 @@ describe('TskvLogger', () => {
 
   it('должен форматировать сообщение в TSKV', () => {
     const message = 'Test Log Message';
-    
+
     logger.log(message);
 
     expect(consoleSpy).toHaveBeenCalled();
@@ -32,8 +32,8 @@ describe('TskvLogger', () => {
 
     expect(output).toContain('level=log');
     expect(output).toContain(`message=${message}`);
-    expect(output).toMatch(/timestamp=\d{4}-\d{2}-\d{2}/); 
-    
+    expect(output).toMatch(/timestamp=\d{4}-\d{2}-\d{2}/);
+
     expect(output).toMatch(/\t/);
   });
 

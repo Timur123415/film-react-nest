@@ -35,9 +35,8 @@ async function bootstrap() {
       logger = new DevLogger(); // По умолчанию обычный логгер с цветами
   }
 
-
   const app = await NestFactory.create(AppModule.register(appConfig), {
-    bufferLogs: true, 
+    bufferLogs: true,
   });
 
   app.useLogger(logger);
