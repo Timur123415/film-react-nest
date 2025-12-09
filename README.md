@@ -1,5 +1,5 @@
 # ДЕПЛОЙ ПРОЕКТА
-http://158.160.0.18
+http://timur-films.nomorepartiessbs.ru
 
 
 # FILM!
