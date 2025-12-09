@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend 
+      dockerfile: Dockerfile
+    image: ghcr.io/timur123415/afisha-backend:latest
+    container_name: afisha-backend
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend/public:/app/public
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: afisha
+      DATABASE_DRIVER: postgres
+      LOGGER_TYPE: json
+    depends_on:
+      - postgres
+    networks:
+      - afisha-network
+
+  nginx:
+    build:
+      context: . 
+      dockerfile: ./nginx/Dockerfile 
+    image: ghcr.io/timur123415/afisha-nginx:latest
+    container_name: afisha-nginx
+    ports:
+      - "80:80" 
+    depends_on:
+      - backend
+    networks:
+      - afisha-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: afisha-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: afisha
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - afisha-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: afisha-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "8080:80" 
+    depends_on:
+      - postgres
+    networks:
+      - afisha-network
+
+volumes:
+  pg_data:
+
+networks:
+  afisha-network:
+    driver: bridge

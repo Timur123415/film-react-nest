@@ -3,6 +3,9 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { AppConfig } from './app.config.provider';
+import { DevLogger } from './logger/dev.logger';
+import { JsonLogger } from './logger/json.logger';
+import { TskvLogger } from './logger/tskv.logger';
 
 async function bootstrap() {
   const appConfig: AppConfig = {
@@ -20,10 +23,26 @@ async function bootstrap() {
     },
   };
 
-  const app = await NestFactory.create(AppModule.register(appConfig));
+  let logger;
+  switch (process.env.LOGGER_TYPE) {
+    case 'json':
+      logger = new JsonLogger();
+      break;
+    case 'tskv':
+      logger = new TskvLogger();
+      break;
+    default:
+      logger = new DevLogger(); // По умолчанию обычный логгер с цветами
+  }
 
+
+  const app = await NestFactory.create(AppModule.register(appConfig), {
+    bufferLogs: true, 
+  });
+
+  app.useLogger(logger);
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.setGlobalPrefix('api/afisha');
+  app.setGlobalPrefix('api/afisha/');
   app.enableCors();
 
   await app.listen(3000);

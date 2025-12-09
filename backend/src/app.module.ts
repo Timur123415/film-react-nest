@@ -31,8 +31,8 @@ export class AppModule {
       imports: [
         AppConfigModule,
         ServeStaticModule.forRoot({
-          rootPath: path.resolve(__dirname, '../public/content/afisha'),
-          serveRoot: '/content/afisha',
+          rootPath: path.join(process.cwd(), 'public'),
+          serveRoot: '/', 
         }),
         ormModule,
         FilmsModule.registerAsync(config.database.driver),
